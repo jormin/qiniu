@@ -1,0 +1,28 @@
+{
+    "name": "jormin/qiniu",
+    "type": "library",
+    "description": "七牛",
+    "keywords": [
+        "Jormin",
+        "七牛"
+    ],
+    "homepage": "https://github.com/jormin/qiniu",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jormin",
+            "email": "jorminxee@gmail.com",
+            "homepage": "https://blog.lerzen.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^5.6 || ^7.0",
+        "qiniu/php-sdk": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jormin\\Qiniu\\": "src"
+        }
+    }
+}
