@@ -450,6 +450,47 @@ class Qiniu{
     }
 
     /**
+     * 指定天数后删除文件
+     *
+     * @param $bucket
+     * @param $key
+     * @param $days
+     * @return array
+     */
+    public function deleteAfterDays($bucket, $key, $days){
+        $err = $this->bucketManager->deleteAfterDays($bucket, $key, $days);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 指定天数后批量删除文件
+     *
+     * @param $bucket
+     * @param $keys
+     * @param $days 0表示永久存储
+     * @return array
+     */
+    public function batchDeleteAfterDays($bucket, $keys, $days){
+        $keyDayPairs = array();
+        foreach ($keys as $key) {
+            $keyDayPairs[$key] = $days;
+        }
+        $ops = $this->bucketManager->buildBatchDeleteAfterDays($bucket, $keyDayPairs);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        return $return;
+    }
+
+    /**
      * 从指定Url抓取资源
      *
      * @param $bucket

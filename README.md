@@ -33,8 +33,11 @@ $qiniu->count($bucket);
 // 读取指定空间的文件列表
 $qiniu->listFiles($bucket, [$limit=1000, $prefix='', $marker='', $delimiter='']);
 
-// 读取指定文件的信息
-$qiniu->fileInfo($bucket, $key);
+// 读取文件信息
+$qiniu->stat($bucket, $key);
+
+// 批量读取文件信息
+$qiniu->batchStat($bucket, $keys);
 
 // 获取上传文件Token
 $qiniu->uploadToken($bucket, [$key = null, $expires = 3600, $policy = null, $strictPolicy = true]);
@@ -48,11 +51,41 @@ $qiniu->uploadWithToken($uploadToken, $filePath, [$key = null]);
 // 移动文件
 $qiniu->move($srcBucket, $srcKey, $destBucket, $destKey, [$force=true]);
 
+// 批量移动文件
+$qiniu->batchMove($srcBucket, $keys, $destBucket, [$prefix='', $suffix='', $force=true]);
+
 // 复制文件
 $qiniu->copy($srcBucket, $srcKey, $destBucket, $destKey, [$force=true]);
 
+// 批量复制文件
+$qiniu->batchCopy($srcBucket, $keys, $destBucket, [$prefix='', $suffix='', $force=true]);
+
 // 修改文件存储类型 $type 0:标准存储；1:低频存储
-$qiniu->changeFileType($bucket, $key, $type);
+$qiniu->changeType($bucket, $key, $type);
+
+// 批量修改文件存储类型 $type 0:标准存储；1:低频存储
+$qiniu->batchChangeType($bucket, $keys, $type);
+
+// 修改文件状态 $status 0:启用；1:禁用
+$qiniu->changeStatus($bucket, $key, $status);
+
+// 修改文件MIME
+$qiniu->changeMime($bucket, $key, $mime);
+
+// 批量修改文件MIME
+$qiniu->batchChangeMime($bucket, $keys, $mime);
+
+// 删除文件
+$qiniu->delete($bucket, $key);
+
+// 批量删除文件
+$qiniu->batchDelete($bucket, $keys);
+
+// 指定天数后删除文件
+$qiniu->deleteAfterDays($bucket, $key, $days);
+
+// 指定天数后批量删除文件
+$qiniu->batchDeleteAfterDays($bucket, $keys, $days);
 
 // 从指定Url抓取资源
 $qiniu->fetch($bucket, $url, [$key = null]);
