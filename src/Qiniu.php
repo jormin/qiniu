@@ -297,21 +297,21 @@ class Qiniu{
      * @return array
      */
     public function refresh($urls, $dirs){
-        if(count($urls) && count($dirs)){
-            list($ret, $err) = $this->cdnManager->refreshUrlsAndDirs($urls, $dirs);
-        }else if(count($urls)){
-            list($ret, $err) = $this->cdnManager->refreshUrls($urls);
-        }else if($this->count($dirs)){
-            list($ret, $err) = $this->cdnManager->refreshDirs($dirs);
+        if(is_array($urls) && is_array($dirs)){
+            list($response) = $this->cdnManager->refreshUrlsAndDirs($urls, $dirs);
+        }else if(is_array($urls)){
+            list($response) = $this->cdnManager->refreshUrls($urls);
+        }else if(is_array($dirs)){
+            list($response) = $this->cdnManager->refreshDirs($dirs);
         }else{
             $return = ['error' => true, 'message' => '刷新Url或者目录不能都为空', 'errorCode'=>-1];
             return $return;
         }
-        if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+        if($response['code'] != 200){
+            $return = ['error' => true, 'message' => $response['error'], 'errorCode'=>$response['code']];
             return $return;
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$response];
         return $return;
     }
 }
