@@ -94,19 +94,37 @@ class Qiniu{
     }
 
     /**
-     * 读取文件的Metadata信息
+     * 读取文件信息
      *
      * @param $bucket
      * @param $key
      * @return array
      */
-    public function fileInfo($bucket, $key){
+    public function stat($bucket, $key){
         list($fileInfo, $err) = $this->bucketManager->stat($bucket, $key);
         if($err){
             $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
             return $return;
         }
         $return = ['error' => false, 'message' => '操作成功', 'data'=>$fileInfo];
+        return $return;
+    }
+
+    /**
+     * 批量读取文件信息
+     *
+     * @param $bucket
+     * @param $keys
+     * @return array
+     */
+    public function batchStat($bucket, $keys){
+        $ops = $this->bucketManager->buildBatchStat($bucket, $keys);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
         return $return;
     }
 
@@ -212,6 +230,32 @@ class Qiniu{
     }
 
     /**
+     * 批量移动文件
+     *
+     * @param $srcBucket
+     * @param $keys
+     * @param $destBucket
+     * @param string $prefix
+     * @param string $suffix
+     * @param bool $force
+     * @return array
+     */
+    public function batchMove($srcBucket, $keys, $destBucket, $prefix='', $suffix='', $force=true){
+        $keyPairs = array();
+        foreach ($keys as $key) {
+            $keyPairs[$key] = $prefix."_".$key."_".$suffix;
+        }
+        $ops = $this->bucketManager->buildBatchMove($srcBucket, $keyPairs, $destBucket, $force);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        return $return;
+    }
+
+    /**
      * 复制文件
      *
      * @param $srcBucket
@@ -233,6 +277,32 @@ class Qiniu{
     }
 
     /**
+     * 批量复制文件
+     *
+     * @param $srcBucket
+     * @param $keys
+     * @param $destBucket
+     * @param string $prefix
+     * @param string $suffix
+     * @param bool $force
+     * @return array
+     */
+    public function batchCopy($srcBucket, $keys, $destBucket, $prefix='', $suffix='', $force=true){
+        $keyPairs = array();
+        foreach ($keys as $key) {
+            $keyPairs[$key] = $prefix."_".$key."_".$suffix;
+        }
+        $ops = $this->bucketManager->buildBatchCopy($srcBucket, $keyPairs, $destBucket, $force);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        return $return;
+    }
+
+    /**
      * 修改文件存储类型
      *
      * @param $bucket
@@ -240,12 +310,137 @@ class Qiniu{
      * @param $type 0 表示标准存储；1 表示低频存储。
      * @return array
      */
-    public function changeFileType($bucket, $key, $type){
+    public function changeType($bucket, $key, $type){
         if(!in_array($type, [0, 1])){
             $return = ['error' => true, 'message' => '文件存储类型错误', 'errorCode'=>-1];
             return $return;
         }
-        list($ret, $err) = $this->bucketManager->changeType($bucket, $key, $type);
+        $err = $this->bucketManager->changeType($bucket, $key, $type);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 批量修改文件存储类型
+     *
+     * @param $bucket
+     * @param $keys
+     * @param $type 0 表示标准存储；1 表示低频存储。
+     * @return array
+     */
+    public function batchChangeType($bucket, $keys, $type){
+        if(!in_array($type, [0, 1])){
+            $return = ['error' => true, 'message' => '文件存储类型错误', 'errorCode'=>-1];
+            return $return;
+        }
+        $keyTypePairs = array();
+        foreach ($keys as $key) {
+            $keyTypePairs[$key] = 1;
+        }
+        $ops = $this->bucketManager->buildBatchChangeType($bucket, $keyTypePairs);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        return $return;
+    }
+
+    /**
+     * 修改文件状态
+     *
+     * @param $bucket
+     * @param $key
+     * @param $status 0 表示启用；1 表示禁用。
+     * @return array
+     */
+    public function changeStatus($bucket, $key, $status){
+        if(!in_array($status, [0, 1])){
+            $return = ['error' => true, 'message' => '文件状态错误', 'errorCode'=>-1];
+            return $return;
+        }
+        $err = $this->bucketManager->changeStatus($bucket, $key, $status);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 修改文件MIME
+     *
+     * @param $bucket
+     * @param $key
+     * @param $mime
+     * @return array
+     */
+    public function changeMime($bucket, $key, $mime){
+        $err = $this->bucketManager->changeMime($bucket, $key, $mime);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 批量修改文件MIME
+     *
+     * @param $bucket
+     * @param $keys
+     * @param $mime
+     * @return array
+     */
+    public function batchChangeMime($bucket, $keys, $mime){
+        $keyMimePairs = array();
+        foreach ($keys as $key) {
+            $keyMimePairs[$key] = $mime;
+        }
+        $ops = $this->bucketManager->buildBatchChangeMime($bucket, $keyMimePairs);
+        list($ret, $err) = $this->bucketManager->batch($ops);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
+        return $return;
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param $bucket
+     * @param $key
+     * @return array
+     */
+    public function delete($bucket, $key){
+        $err = $this->bucketManager->delete($bucket, $key);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 批量删除文件
+     *
+     * @param $bucket
+     * @param $keys
+     * @return array
+     */
+    public function batchDelete($bucket, $keys){
+        $ops = $this->bucketManager->buildBatchDelete($bucket, $keys);
+        list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
             $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
             return $return;
