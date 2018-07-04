@@ -5,6 +5,7 @@ namespace Jormin\Qiniu;
 use Qiniu\Auth;
 use Qiniu\Cdn\CdnManager;
 use Qiniu\Storage\BucketManager;
+use Jormin\Qiniu\BucketManager as SubBucketManager;
 use Qiniu\Storage\UploadManager;
 
 /**
@@ -16,7 +17,7 @@ class Qiniu{
 
     private $accessKey, $secretKey;
 
-    public $auth, $bucketManager, $cdnManager;
+    public $auth, $bucketManager, $subBucketManager, $cdnManager;
 
     /**
      * Qiniu constructor.
@@ -29,6 +30,7 @@ class Qiniu{
         $this->secretKey = $secretKey;
         $this->auth = new Auth($accessKey, $secretKey);
         $this->bucketManager = new BucketManager($this->auth);
+        $this->subBucketManager = new SubBucketManager($this->auth);
         $this->cdnManager = new CdnManager($this->auth);
     }
 
@@ -54,6 +56,56 @@ class Qiniu{
             ];
         }
         $return = ['error' => false, 'message' => '操作成功', 'data'=>$buckets];
+        return $return;
+    }
+
+    /**
+     * 创建空间
+     *
+     * @param String $bucket 空间名称
+     * @param String $region 区域，默认滑动  z0 华东 z1 华北   z2 华南   na0 北美  as0 东南亚
+     * @return array
+     */
+    public function createBucket($bucket, $region='z0'){
+        $err = $this->subBucketManager->createBucket($bucket, $region);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 删除空间
+     *
+     * @param String $bucket 空间名称
+     * @return array
+     */
+    public function dropBucket($bucket){
+        $err = $this->subBucketManager->dropBucket($bucket);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
+        return $return;
+    }
+
+    /**
+     * 设置空间访问权限
+     *
+     * @param String $bucket 空间名称
+     * @param integer $private 权限 0 公开 1 私有
+     * @return array
+     */
+    public function setBucketAuth($bucket, $private){
+        $err = $this->subBucketManager->setBucketAuth($bucket, $private);
+        if($err){
+            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
         return $return;
     }
 
@@ -543,6 +595,22 @@ class Qiniu{
             $return = ['error' => true, 'message' => '刷新Url或者目录不能都为空', 'errorCode'=>-1];
             return $return;
         }
+        if($response['code'] != 200){
+            $return = ['error' => true, 'message' => $response['error'], 'errorCode'=>$response['code']];
+            return $return;
+        }
+        $return = ['error' => false, 'message' => '操作成功', 'data'=>$response];
+        return $return;
+    }
+
+    /**
+     * 文件预取
+     *
+     * @param $urls
+     * @return array
+     */
+    public function prefetchUrls($urls){
+        list($response) = $this->cdnManager->prefetchUrls($urls);
         if($response['code'] != 200){
             $return = ['error' => true, 'message' => $response['error'], 'errorCode'=>$response['code']];
             return $return;
