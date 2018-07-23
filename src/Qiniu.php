@@ -13,7 +13,7 @@ use Qiniu\Storage\UploadManager;
  *
  * @package Jormin\Qiniu
  */
-class Qiniu{
+class Qiniu extends BaseObject {
 
     private $accessKey, $secretKey;
 
@@ -42,8 +42,7 @@ class Qiniu{
     public function buckets(){
         list($buckets, $err) = $this->bucketManager->buckets(true);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
         foreach ($buckets as $key => $bucket){
             $response = $this->domains($bucket);
@@ -55,8 +54,7 @@ class Qiniu{
                 'domains' => $response['data']
             ];
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$buckets];
-        return $return;
+        return $this->success('操作成功', $buckets);
     }
 
     /**
@@ -69,11 +67,9 @@ class Qiniu{
     public function createBucket($bucket, $region='z0'){
         $err = $this->subBucketManager->createBucket($bucket, $region);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -85,11 +81,9 @@ class Qiniu{
     public function dropBucket($bucket){
         $err = $this->subBucketManager->dropBucket($bucket);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -102,11 +96,9 @@ class Qiniu{
     public function setBucketAuth($bucket, $private){
         $err = $this->subBucketManager->setBucketAuth($bucket, $private);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -118,11 +110,9 @@ class Qiniu{
     public function domains($bucket){
         list($domains, $err) = $this->bucketManager->domains($bucket);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$domains];
-        return $return;
+        return $this->success('操作成功', $domains);
     }
 
     /**
@@ -138,11 +128,9 @@ class Qiniu{
     public function listFiles($bucket, $limit=1000, $prefix='', $marker='', $delimiter=''){
         list($ret, $err) = $this->bucketManager->listFiles($bucket, $prefix, $marker, $limit, $delimiter);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -155,11 +143,9 @@ class Qiniu{
     public function stat($bucket, $key){
         list($fileInfo, $err) = $this->bucketManager->stat($bucket, $key);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$fileInfo];
-        return $return;
+        return $this->success('操作成功', $fileInfo);
     }
 
     /**
@@ -173,11 +159,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchStat($bucket, $keys);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -202,8 +186,7 @@ class Qiniu{
                 $flag = false;
             }
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>['amount'=>$amount]];
-        return $return;
+        return $this->success('操作成功', ['amount'=>$amount]);
     }
 
     /**
@@ -218,8 +201,7 @@ class Qiniu{
      */
     public function uploadToken($bucket, $key = null, $expires = 3600, $policy = null, $strictPolicy = true){
         $token = $this->auth->uploadToken($bucket, $key, $expires, $policy, $strictPolicy);
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$token];
-        return $return;
+        return $this->success('操作成功', $token);
     }
 
     /**
@@ -253,11 +235,9 @@ class Qiniu{
         $uploadMgr = new UploadManager();
         list($ret, $err) = $uploadMgr->putFile($uploadToken, $key, $filePath);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -274,11 +254,9 @@ class Qiniu{
     public function move($srcBucket, $srcKey, $destBucket, $destKey, $force=true){
         $err = $this->bucketManager->move($srcBucket, $srcKey, $destBucket, $destKey, $force);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -300,11 +278,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchMove($srcBucket, $keyPairs, $destBucket, $force);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -321,11 +297,9 @@ class Qiniu{
     public function copy($srcBucket, $srcKey, $destBucket, $destKey, $force=true){
         $err = $this->bucketManager->copy($srcBucket, $srcKey, $destBucket, $destKey, $force);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -347,11 +321,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchCopy($srcBucket, $keyPairs, $destBucket, $force);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -364,16 +336,13 @@ class Qiniu{
      */
     public function changeType($bucket, $key, $type){
         if(!in_array($type, [0, 1])){
-            $return = ['error' => true, 'message' => '文件存储类型错误', 'errorCode'=>-1];
-            return $return;
+            return $this->error('文件存储类型错误', ['errorCode'=>-1]);
         }
         $err = $this->bucketManager->changeType($bucket, $key, $type);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -386,8 +355,7 @@ class Qiniu{
      */
     public function batchChangeType($bucket, $keys, $type){
         if(!in_array($type, [0, 1])){
-            $return = ['error' => true, 'message' => '文件存储类型错误', 'errorCode'=>-1];
-            return $return;
+            return $this->error('文件存储类型错误', ['errorCode'=>-1]);
         }
         $keyTypePairs = array();
         foreach ($keys as $key) {
@@ -396,11 +364,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchChangeType($bucket, $keyTypePairs);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -413,16 +379,13 @@ class Qiniu{
      */
     public function changeStatus($bucket, $key, $status){
         if(!in_array($status, [0, 1])){
-            $return = ['error' => true, 'message' => '文件状态错误', 'errorCode'=>-1];
-            return $return;
+            return $this->error('文件状态错误', ['errorCode'=>-1]);
         }
         $err = $this->bucketManager->changeStatus($bucket, $key, $status);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -436,11 +399,9 @@ class Qiniu{
     public function changeMime($bucket, $key, $mime){
         $err = $this->bucketManager->changeMime($bucket, $key, $mime);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -459,11 +420,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchChangeMime($bucket, $keyMimePairs);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -476,11 +435,9 @@ class Qiniu{
     public function delete($bucket, $key){
         $err = $this->bucketManager->delete($bucket, $key);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -494,11 +451,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchDelete($bucket, $keys);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -512,11 +467,9 @@ class Qiniu{
     public function deleteAfterDays($bucket, $key, $days){
         $err = $this->bucketManager->deleteAfterDays($bucket, $key, $days);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -535,11 +488,9 @@ class Qiniu{
         $ops = $this->bucketManager->buildBatchDeleteAfterDays($bucket, $keyDayPairs);
         list($ret, $err) = $this->bucketManager->batch($ops);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -553,11 +504,9 @@ class Qiniu{
     public function fetch($bucket, $url, $key = null){
         list($ret, $err) = $this->bucketManager->fetch($url, $bucket, $key);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$ret];
-        return $return;
+        return $this->success('操作成功', $ret);
     }
 
     /**
@@ -570,11 +519,9 @@ class Qiniu{
     public function prefetch($bucket, $key){
         $err = $this->bucketManager->prefetch($bucket, $key);
         if($err){
-            $return = ['error' => true, 'message' => $err->message(), 'errorCode'=>$err->code()];
-            return $return;
+            return $this->error($err->message(), ['errorCode'=>$err->code()]);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>null];
-        return $return;
+        return $this->success('操作成功');
     }
 
     /**
@@ -592,15 +539,12 @@ class Qiniu{
         }else if(is_array($dirs)){
             list($response) = $this->cdnManager->refreshDirs($dirs);
         }else{
-            $return = ['error' => true, 'message' => '刷新Url或者目录不能都为空', 'errorCode'=>-1];
-            return $return;
+            return $this->error('刷新Url或者目录不能都为空', ['errorCode'=>-1]);
         }
         if($response['code'] != 200){
-            $return = ['error' => true, 'message' => $response['error'], 'errorCode'=>$response['code']];
-            return $return;
+            return $this->error($response['error'], $response['code']);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$response];
-        return $return;
+        return $this->success('操作成功', $response);
     }
 
     /**
@@ -612,10 +556,8 @@ class Qiniu{
     public function prefetchUrls($urls){
         list($response) = $this->cdnManager->prefetchUrls($urls);
         if($response['code'] != 200){
-            $return = ['error' => true, 'message' => $response['error'], 'errorCode'=>$response['code']];
-            return $return;
+            return $this->error($response['error'], $response['code']);
         }
-        $return = ['error' => false, 'message' => '操作成功', 'data'=>$response];
-        return $return;
+        return $this->success('操作成功', $response);
     }
 }

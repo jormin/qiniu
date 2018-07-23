@@ -6,6 +6,14 @@
 $ composer require jormin/qiniu -vvv
 ```
 
+## 通用响应
+
+| 参数  | 类型  | 是否必须  | 描述  |
+| ------------ | ------------ | ------------ | ------------ |
+| success | bool | 是 | false：操作失败 true:操作成功 |
+| message | string | 是 | 结果说明 |
+| data | array | 否 | 返回数据 |
+
 ## 使用
 
 ### 生成七牛对象
