@@ -46,7 +46,7 @@ class Qiniu extends BaseObject {
         }
         foreach ($buckets as $key => $bucket){
             $response = $this->domains($bucket);
-            if($response['error']){
+            if(!$response['success']){
                 return $response;
             }
             $buckets[$key] = [
@@ -176,7 +176,7 @@ class Qiniu extends BaseObject {
         $marker = '';
         while ($flag){
             $response = $this->listFiles($bucket, 1000, '', $marker);
-            if($response['error']){
+            if(!$response['success']){
                 return $response;
             }
             $marker = isset($response['data']['marker']) ? $response['data']['marker'] : '';
@@ -215,7 +215,7 @@ class Qiniu extends BaseObject {
      */
     public function upload($bucket, $filePath, $key = null){
         $response = $this->uploadToken($bucket, $key);
-        if($response['error']){
+        if(!$response['success']){
             return $response;
         }
         $uploadToken = $response['data'];
